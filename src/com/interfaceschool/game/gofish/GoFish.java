@@ -27,7 +27,7 @@ public class GoFish {
      */
     public static void main(String[] args) throws IOException {
         GoFish game = new GoFish();
-        String[] playerNames = {"Kent", "Dan", "David", "John"};
+        String[] playerNames = {"Teresa", "John", "Haley", "Ann"};
         game.setup(playerNames);
         for (Player player : game.players) {
             game.layDownSets(player);
@@ -42,10 +42,21 @@ public class GoFish {
                     currentPlayerIndex = 0;
                 }
             }
-        } while (game.cardList(currentPlayer).size() > 0 && game.deck.getCards().size() > 0);
+        } while (game.cardList(currentPlayer).size() > 0 && game.deck.getCards().size() > 0 && !game.isWinner());
+        game.isWinner();
         if (game.cardList(currentPlayer).size() > 0) {
             game.calculateSetsForVictory();
         }
+    }
+    
+    private Boolean isWinner() {
+        for (Player player : players) {
+            if (player.getHand().getCards().isEmpty()) {
+                System.out.println(player.getName() + " wins by getting rid of all their cards");
+                return true;
+            }
+        }
+        return false;
     }
 
     private void calculateSetsForVictory() {
@@ -58,6 +69,7 @@ public class GoFish {
             if (player.getSets().size() == playerArray[0].getSets().size()) {
                 // you win!
                 System.out.println(player.getName() + " wins with " + playerArray[0].getSets().size() + " mathces!");
+                finalMessage();
             }
         }
     }
@@ -67,7 +79,7 @@ public class GoFish {
         displaySets();
         promptTurn(currentPlayer);
         
-        String[] playerRequest = console.readLine().split(" ");
+        String[] playerRequest = console.readLine().split(" ", -1);
         String nameText = playerRequest[0];
         String rankText = playerRequest[1];
         Player foundPlayer = findPlayer(nameText);
@@ -93,15 +105,22 @@ public class GoFish {
                     takeTurn(currentPlayer);
                 } else {
                     System.out.println(currentPlayer.getName() + " wins by getting rid of all their cards!");
+                    finalMessage(); 
                 }
             } else {
                 // Go fish
                 goFishForCard(currentPlayer, rankValue);
             }
         } else {
-            System.out.println("Couldn't match to a valid format.\n Using valid opponent names and valid card ranks, please request in this format \"<name> <rank>\".");
+            System.out.println("Failed requested\nname: "+nameText+"\n"+"rank: "+rankText +"\nWe couldn't match to a valid format.\nUsing valid opponent names and valid card ranks.\nplease request in this format \"<name> <rank>\".");
             takeTurn(currentPlayer);
         }
+    }
+    
+    private void finalMessage() {
+        for (Player player : players){
+                        System.out.println(player.getName()+" had these remaining cards:\n"+player.getHand());
+                    }
     }
     
     private List<Card> cardList(Player player){
@@ -115,10 +134,10 @@ public class GoFish {
     }
     
     private boolean isValidMove(String[] playerRequest, Player foundPlayer, String rankText, Player currentPlayer){
-        return (playerRequest.length == 2 
+        return playerRequest.length == 2
                 && foundPlayer != null 
                 && playerHasRankCard(rankText, currentPlayer) 
-                && !currentPlayer.getName().equalsIgnoreCase(playerRequest[0]));
+                && !currentPlayer.getName().equalsIgnoreCase(playerRequest[0]);
     }
 
     private void goFishForCard(Player player, int rankValue) throws IOException {
